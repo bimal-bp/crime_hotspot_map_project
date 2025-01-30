@@ -6,7 +6,7 @@ from streamlit_folium import folium_static
 import time
 
 # Twitter API Bearer Token (Replace with your own bearer token)
-bearer_token = "AAAAAAAAAAAAAAAAAAAAANxYygEAAAAAxv9BHK27MAArTnGhV6w5QnA7JUc%3DXsj3FQmRH5wrs70FK0UZrm4WX8VeRB53oGsDSnGXboliT7GPh9"
+bearer_token = "YOUR_TWITTER_BEARER_TOKEN_HERE"  # Replace with actual bearer token
 
 # Initialize Tweepy Client
 client = tweepy.Client(bearer_token=bearer_token, wait_on_rate_limit=True)
@@ -19,21 +19,25 @@ def search_crime_tweets(query, latitude, longitude, max_results=50):
             query=query,
             max_results=max_results,
             tweet_fields=["geo", "created_at", "text"],
-            expansions=["geo.place_id"]
+            expansions=["geo.place_id"],
+            place_fields=["geo"]
         )
 
         tweets = []
-        if response.data:
-            # Loop through the tweets to check for geographical information
-            for tweet in response.data:
-                if tweet.geo:
-                    tweet_location = tweet.geo['coordinates']
-                    tweet_latitude = tweet_location['lat']
-                    tweet_longitude = tweet_location['long']
+        places = {place["id"]: place["geo"] for place in response.includes.get("places", [])} if response.includes else {}
 
-                    # Calculate distance between the tweet location and the input location
+        if response.data:
+            for tweet in response.data:
+                place_id = tweet.geo["place_id"] if tweet.geo else None
+                if place_id and place_id in places:
+                    # Extract center coordinates from the bounding box
+                    bounding_box = places[place_id]["bbox"]
+                    tweet_latitude = (bounding_box[1] + bounding_box[3]) / 2
+                    tweet_longitude = (bounding_box[0] + bounding_box[2]) / 2
+
+                    # Calculate distance between tweet location and user location
                     distance = geodesic((latitude, longitude), (tweet_latitude, tweet_longitude)).km
-                    if distance <= 5:  # Consider tweets within 5 km radius
+                    if distance <= 5:  # Filter tweets within 5 km
                         tweets.append({
                             "text": tweet.text,
                             "latitude": tweet_latitude,
@@ -41,11 +45,15 @@ def search_crime_tweets(query, latitude, longitude, max_results=50):
                         })
         return tweets
 
-    except tweepy.errors.TooManyRequests as e:
+    except tweepy.errors.TooManyRequests:
         # Handle rate limit error
-        print("Rate limit exceeded, waiting for reset...")
+        st.error("Rate limit exceeded. Please wait for 15 minutes and try again.")
         time.sleep(900)  # Wait for 15 minutes before retrying
         return search_crime_tweets(query, latitude, longitude)
+
+    except Exception as e:
+        st.error(f"Error fetching tweets: {str(e)}")
+        return []
 
 # Streamlit UI
 st.title("Crime Hotspot Mapping from Tweets")
@@ -58,14 +66,14 @@ current_location = (latitude, longitude)
 
 # Button to generate the map and display tweets
 if st.button("Generate Map"):
-    query = "crime OR theft OR robbery lang:en"
-    tweets = search_crime_tweets(query, latitude, longitude, max_results=50)
-
     if current_location != (0.0, 0.0):
+        query = "crime OR theft OR robbery lang:en"
+        tweets = search_crime_tweets(query, latitude, longitude, max_results=50)
+
         # Initialize Folium map
         crime_map = folium.Map(location=current_location, zoom_start=12, tiles="CartoDB Dark_Matter")
 
-        # Plot tweets on the map if they are within 5km radius
+        # Plot tweets on the map
         for tweet in tweets:
             tweet_location = (tweet["latitude"], tweet["longitude"])
             folium.CircleMarker(
@@ -79,6 +87,9 @@ if st.button("Generate Map"):
             ).add_to(crime_map)
 
         # Display the Folium map in Streamlit
-        folium_static(crime_map)
+        if tweets:
+            folium_static(crime_map)
+        else:
+            st.info("No nearby crime-related tweets found within a 5 km radius.")
     else:
         st.warning("Please enter a valid location.")
