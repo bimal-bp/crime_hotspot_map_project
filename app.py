@@ -4,7 +4,7 @@ from geopy.distance import geodesic
 import folium
 from streamlit_folium import folium_static
 
-# Twitter API credentials (use environment variables for better security)
+# Twitter API credentials (Replace with your own)
 consumer_key = 'vFzUHNDXikBatixRgHzZQQzkj'
 consumer_secret = 'yOC1KeZcbjSFnl33PHvsMQPOex9Haw9B1mTbnDDGzvgCRo1W1D'
 access_token = '1882523780482015232-aREdKogp0R5jffxAtpO8wGztwHK0ev'
@@ -12,16 +12,47 @@ access_token_secret = 'xkGpICzvH8er1bQjFtsA4hTPbG5Nv0yS5Khb0oFoBtFZT'
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAIG8yQEAAAAA8S51rxYBhq6zoRZm9AO34G%2BuTQU%3D16QOXFQ4p3Ef2eyR52GmMBvvi4Pcf9y81GKKTi6Kvj5kmGV9Xv"
 
 # Initialize Tweepy Client
-client = tweepy.Client(bearer_token=bearer_token)
+client = tweepy.Client(
+    bearer_token=bearer_token,
+    consumer_key=consumer_key,
+    consumer_secret=consumer_secret,
+    access_token=access_token,
+    access_token_secret=access_token_secret
+)
 
 # Streamlit UI
 st.title("Crime Hotspot Mapping from Tweets")
 st.subheader("Enter your location and visualize nearby crime-related tweets.")
 
 # Location input
-latitude = st.number_input("Enter your latitude", format="%f")
-longitude = st.number_input("Enter your longitude", format="%f")
+latitude = st.number_input("Enter your latitude", format="%f", value=37.7749)
+longitude = st.number_input("Enter your longitude", format="%f", value=-122.4194)
 current_location = (latitude, longitude)
+
+def search_crime_tweets_v2(query, max_results=10):
+    response = client.search_recent_tweets(
+        query=query,
+        max_results=max_results,
+        tweet_fields=["geo", "created_at", "text"],
+        expansions=["geo.place_id"]
+    )
+
+    tweets = []
+    if response.data:
+        for tweet in response.data:
+            place_info = response.includes.get("places", [])
+            if place_info:
+                for place in place_info:
+                    if "geo" in place and "bbox" in place["geo"]:
+                        bbox = place["geo"]["bbox"]
+                        latitude = (bbox[1] + bbox[3]) / 2
+                        longitude = (bbox[0] + bbox[2]) / 2
+                        tweets.append({
+                            "text": tweet.text,
+                            "latitude": latitude,
+                            "longitude": longitude
+                        })
+    return tweets
 
 # Button to generate the map
 if st.button("Generate Map"):
@@ -52,29 +83,3 @@ if st.button("Generate Map"):
         folium_static(crime_map)
     else:
         st.warning("Please enter a valid location.")
-
-
-def search_crime_tweets_v2(query, max_results=10):
-    response = client.search_recent_tweets(
-        query=query,
-        max_results=max_results,
-        tweet_fields=["geo", "created_at", "text"],
-        user_fields=["location"],
-        expansions=["geo.place_id", "author_id"]
-    )
-
-    tweets = []
-    if response.data:
-        for tweet in response.data:
-            if response.includes and "places" in response.includes:
-                place = response.includes["places"][0]
-                if "geo" in place and "bbox" in place["geo"]:
-                    bbox = place["geo"]["bbox"]
-                    latitude = (bbox[1] + bbox[3]) / 2
-                    longitude = (bbox[0] + bbox[2]) / 2
-                    tweets.append({
-                        "text": tweet.text,
-                        "latitude": latitude,
-                        "longitude": longitude
-                    })
-    return tweets
