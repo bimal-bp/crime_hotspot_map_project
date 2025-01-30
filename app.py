@@ -6,7 +6,7 @@ from streamlit_folium import folium_static
 import time
 
 # Twitter API Bearer Token (Replace with your own bearer token)
-bearer_token = "AAAAAAAAAAAAAAAAAAAAANxYygEAAAAAxv9BHK27MAArTnGhV6w5QnA7JUc%3DXsj3FQmRH5wrs70FK0UZrm4WX8VeRB53oGsDSnGXboliT7GPh9"  # Replace with actual bearer token
+bearer_token = "AAAAAAAAAAAAAAAAAAAAANxYygEAAAAApSH6pwLKhqafkv9yO%2BwOtSRFhGs%3DZqunABydkmsWGA3P2IJO3KB6OeVxHUWdniXrsot3T6vHpT7AMR"  # Replace with actual bearer token
 
 # Initialize Tweepy Client
 client = tweepy.Client(bearer_token=bearer_token, wait_on_rate_limit=True)
