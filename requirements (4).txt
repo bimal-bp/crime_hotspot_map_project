@@ -1,0 +1,5 @@
+streamlit
+tweepy
+geopy
+folium
+streamlit-folium
