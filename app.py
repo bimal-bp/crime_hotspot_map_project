@@ -5,11 +5,11 @@ import folium
 from streamlit_folium import folium_static
 
 # Twitter API credentials (Replace with your own)
-consumer_key = 'tOSwDf5Z96GEh65SCE6PgeOP1'
-consumer_secret = '2G4mdxtWEKDOT5lv5FOBioLe0aOSUfygrYvO81aRRU8pzWA3g4'
-access_token = '1877410492966113280-jfcREN0gQaCQwBm6Tdv90tRQ2ybe53'
-access_token_secret = 'ye9VCmmEqAul3YM5vkDeyRme1fhWXmRJIUdiUmxDFjnZn'
-bearer_token = "AAAAAAAAAAAAAAAAAAAAAEpYygEAAAAA0RLh3ABQ2zi5yqGqVP9QkdO%2BYVs%3DCD6xF1mnWPzMZkwryFlDX3mk74tgR01kSGwlq4xi3GUyuWDnsu"
+consumer_key = 'IViummgOyXUyr4ceg7RU8LynJ'
+consumer_secret = 'RbsKx2JGF2fILRGG5Z1TjLAZ9DiJlt6LoxVu8fE0eGzeh8QbRt'
+access_token = '1884823645333139456-OiggsWmigEzsms4sMFMm43g8YHAe1c'
+access_token_secret = 'H5N7CXE7N15thqHkS1zVSdodt0Zh9WyjJ5MzLAHzBFZFB'
+bearer_token = "AAAAAAAAAAAAAAAAAAAAANxYygEAAAAAGsEz8Q2N16Y0PzOCrmbt8LiHG5c%3DP6m0sDRBu7fvIRm97TOXE4P8oPSGT0UhTzzDdvTH9IUkAEiQXo"
 
 # Initialize Tweepy Client
 client = tweepy.Client(
