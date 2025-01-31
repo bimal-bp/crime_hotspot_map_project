@@ -4,7 +4,7 @@ from opencage.geocoder import OpenCageGeocode
 from streamlit_folium import st_folium
 
 # OpenCage API key
-api_key = 'your-opencage-api-key'
+api_key = '94fcb6f260594f118f9dd331ca124dbc'
 geocoder = OpenCageGeocode(api_key)
 
 # Streamlit app
