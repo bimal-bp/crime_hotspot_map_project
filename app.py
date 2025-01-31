@@ -1,10 +1,11 @@
 import streamlit as st
 import folium
-from geopy.geocoders import Nominatim
+from opencage.geocoder import OpenCageGeocode
 from streamlit_folium import st_folium
 
-# Geocoder setup
-geolocator = Nominatim(user_agent="geoapiExercises")
+# OpenCage API key
+api_key = 'your-opencage-api-key'
+geocoder = OpenCageGeocode(api_key)
 
 # Streamlit app
 st.title("Map Generation by Location (State and District)")
@@ -17,10 +18,11 @@ district = st.text_input("Enter District")
 if st.button("Set Location"):
     if state and district:
         location_name = f"{district}, {state}"
-        location = geolocator.geocode(location_name)
-        
-        if location:
-            current_location = (location.latitude, location.longitude)
+        result = geocoder.geocode(location_name)
+
+        if result:
+            location = result[0]['geometry']
+            current_location = (location['lat'], location['lng'])
             st.success(f"Location set to: {current_location}")
 
             # Create a map centered around the geocoded location
