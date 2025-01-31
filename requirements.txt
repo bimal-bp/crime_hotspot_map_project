@@ -1,3 +1,4 @@
+opencage
 streamlit==1.41.1
 tweepy==4.14.0
 geopy==2.3.0
